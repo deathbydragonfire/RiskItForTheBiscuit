@@ -40,6 +40,25 @@ public class IsometricCharacterController : MonoBehaviour
     [Tooltip("Ignore vertical from side pushers.")]
     public bool sidePushIgnoreVertical = true;
 
+    [Header("Camera Follow (for Shake)")]
+    [Tooltip("CameraFollow component to shake. If left empty, will try FindObjectOfType at runtime.")]
+    public CameraFollow cameraFollow;
+
+    [Header("Landing Shake — Small Fall")]
+    public float smallFallThreshold = 8f;
+    public float smallFallDuration = 0.18f;
+    public float smallMagPerUnit = 0.015f;
+    public float smallMaxMagnitude = 0.25f;
+
+    [Header("Landing Shake — Big Fall")]
+    public float bigFallThreshold = 16f;
+    public float bigFallDuration = 0.32f;
+    public float bigMagPerUnit = 0.03f;
+    public float bigMaxMagnitude = 0.55f;
+
+    [Header("Shake Misc")]
+    public float fallShakeCooldown = 0.10f;
+
     private CharacterController controller;
     private Vector3 velocity;   // (x,z,y) final
     private Vector3 horizVel;   // player-intent horizontal
@@ -49,10 +68,15 @@ public class IsometricCharacterController : MonoBehaviour
     private Vector3 sidePushVelCurrent;
     private Vector3 sidePushVelRef;
 
+    // landing shake tracking
+    private float maxDownwardSpeedWhileAirborne = 0f;
+    private float lastShakeTime = -999f;
+
     void Awake()
     {
         controller = GetComponent<CharacterController>();
         if (collisionDebugger == null) collisionDebugger = GetComponent<PlayerCollisionDebugger>();
+        if (cameraFollow == null) cameraFollow = FindObjectOfType<CameraFollow>();
     }
 
     void OnEnable()
@@ -84,6 +108,7 @@ public class IsometricCharacterController : MonoBehaviour
     void Update()
     {
         float dt = Mathf.Max(Time.deltaTime, 1e-6f);
+        bool wasGrounded = controller.isGrounded;
 
         // --- Input → target horizontal velocity
         Vector2 input = ReadMoveInput();
@@ -109,7 +134,7 @@ public class IsometricCharacterController : MonoBehaviour
             }
         }
 
-        // --- Optional side push (keep simple & tame)
+        // --- Optional side push (simple & tame)
         Vector3 sidePushTarget = Vector3.zero;
         if (enableSidePush && collisionDebugger && collisionDebugger.PushingContacts.Count > 0)
         {
@@ -122,13 +147,13 @@ public class IsometricCharacterController : MonoBehaviour
 
                 Vector3 v = rbOther.GetPointVelocity(transform.position);
 
-                // Approximate normal from pusher to player; project to remove inward component
+                // Project off inward normal so we slide instead of bouncing
                 Vector3 closest = col.ClosestPoint(transform.position);
                 Vector3 normal = (transform.position - closest);
                 if (normal.sqrMagnitude < 1e-6f) normal = (transform.position - col.bounds.center);
                 if (normal.sqrMagnitude > 1e-6f) normal.Normalize(); else normal = Vector3.forward;
 
-                v = Vector3.ProjectOnPlane(v, normal);       // slide-only to avoid bounce
+                v = Vector3.ProjectOnPlane(v, normal);
                 if (sidePushIgnoreVertical) v.y = 0f;
 
                 sum += v; count++;
@@ -148,16 +173,20 @@ public class IsometricCharacterController : MonoBehaviour
         }
         sidePushVelCurrent = Vector3.SmoothDamp(sidePushVelCurrent, sidePushTarget, ref sidePushVelRef, sidePushSmoothTime, Mathf.Infinity, dt);
 
-        // --- Vertical
+        // --- Vertical + landing tracking
         isGrounded = controller.isGrounded;
         if (isGrounded)
         {
-            // let upward platform lift a bit; keep a tiny stick force
+            // stick + optional platform lift
             velocity.y = -groundStickForce + platUp;
         }
         else
         {
             velocity.y -= gravity * dt;
+
+            // Track peak downward speed for landing shake
+            if (velocity.y < 0f)
+                maxDownwardSpeedWhileAirborne = Mathf.Max(maxDownwardSpeedWhileAirborne, -velocity.y);
         }
 
         // --- Combine & move
@@ -166,6 +195,15 @@ public class IsometricCharacterController : MonoBehaviour
         velocity.z = totalHoriz.z;
 
         controller.Move(velocity * dt);
+
+        // --- Landing detection -> shake
+        bool groundedNow = controller.isGrounded;
+        if (!wasGrounded && groundedNow)
+        {
+            HandleLandingShake(maxDownwardSpeedWhileAirborne);
+            maxDownwardSpeedWhileAirborne = 0f;
+        }
+        isGrounded = groundedNow;
     }
 
     Vector2 ReadMoveInput()
@@ -177,6 +215,28 @@ public class IsometricCharacterController : MonoBehaviour
         float y = Input.GetAxisRaw(_ver);
         return Vector2.ClampMagnitude(new Vector2(x, y), 1f);
 #endif
+    }
+
+    // --- Camera shake on landing (same logic you had) ---
+    void HandleLandingShake(float impactSpeed)
+    {
+        if (cameraFollow == null) return;
+        if (Time.time - lastShakeTime < fallShakeCooldown) return;
+
+        if (impactSpeed >= bigFallThreshold)
+        {
+            float over = impactSpeed - bigFallThreshold;
+            float magnitude = Mathf.Min(over * bigMagPerUnit, bigMaxMagnitude);
+            cameraFollow.Shake(bigFallDuration, magnitude);
+            lastShakeTime = Time.time;
+        }
+        else if (impactSpeed >= smallFallThreshold)
+        {
+            float over = impactSpeed - smallFallThreshold;
+            float magnitude = Mathf.Min(over * smallMagPerUnit, smallMaxMagnitude);
+            cameraFollow.Shake(smallFallDuration, magnitude);
+            lastShakeTime = Time.time;
+        }
     }
 
     public bool IsGrounded => isGrounded;
