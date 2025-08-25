@@ -691,8 +691,8 @@ MonoBehaviour:
   moveActionRef: {fileID: 0}
   collisionDebugger: {fileID: 0}
   inheritPlatformHorizontal: 1
-  inheritPlatformVerticalUp: 1
-  enableSidePush: 1
+  inheritPlatformVerticalUp: 0
+  enableSidePush: 0
   sidePushMaxSpeed: 3
   sidePushSmoothTime: 0.06
   sidePushIgnoreVertical: 1
@@ -787,7 +787,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 084c2e8e77aab294a83b340f3ae0293e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VelocityPlatformMover
-  moveOffset: {x: 0, y: 4, z: 0}
+  moveOffset: {x: 3, y: 0, z: 0}
   moveDuration: 2
   smooth: 1
 --- !u!54 &1200799006
