@@ -29,16 +29,51 @@ public class IsometricCharacterController : MonoBehaviour
     private readonly string _ver = "Vertical";
 #endif
 
+    [Header("Camera Follow (for Shake)")]
+    [Tooltip("CameraFollow component to shake. If left empty, will try FindObjectOfType at runtime.")]
+    public CameraFollow cameraFollow;
+
+    [Header("Landing Shake — Small Fall")]
+    [Tooltip("Minimum downward speed (units/sec) reached during a fall to trigger a SMALL shake on landing.")]
+    public float smallFallThreshold = 8f;
+    [Tooltip("Base duration for a SMALL landing shake.")]
+    public float smallFallDuration = 0.18f;
+    [Tooltip("Magnitude per unit of impact speed above the SMALL threshold.")]
+    public float smallMagPerUnit = 0.015f;
+    [Tooltip("Maximum magnitude clamp for SMALL landing shakes.")]
+    public float smallMaxMagnitude = 0.25f;
+
+    [Header("Landing Shake — Big Fall")]
+    [Tooltip("Minimum downward speed (units/sec) reached during a fall to trigger a BIG shake on landing.")]
+    public float bigFallThreshold = 16f;
+    [Tooltip("Base duration for a BIG landing shake.")]
+    public float bigFallDuration = 0.32f;
+    [Tooltip("Magnitude per unit of impact speed above the BIG threshold.")]
+    public float bigMagPerUnit = 0.03f;
+    [Tooltip("Maximum magnitude clamp for BIG landing shakes.")]
+    public float bigMaxMagnitude = 0.55f;
+
+    [Header("Shake Misc")]
+    [Tooltip("Cooldown between landing shakes to avoid spam (seconds).")]
+    public float fallShakeCooldown = 0.10f;
+
     private CharacterController controller;
     private Vector3 velocity;   // full velocity (x,z,y)
     private Vector3 horizVel;   // horizontal only
     private bool isGrounded;
     private Vector3 groundNormal = Vector3.up;
 
+    // Internal fall tracking
+    private float maxDownwardSpeedWhileAirborne = 0f; // positive value for speed
+    private float lastShakeTime = -999f;
+
     void Awake()
     {
         controller = GetComponent<CharacterController>();
         controller.slopeLimit = maxSlopeAngle;
+
+        if (cameraFollow == null)
+            cameraFollow = FindObjectOfType<CameraFollow>(); // safe fallback
     }
 
     void OnEnable()
@@ -79,12 +114,15 @@ public class IsometricCharacterController : MonoBehaviour
 
     void Update()
     {
-        // 1) Input -> world X/Z (no camera logic here)
+        // Cache grounded state at start of frame for landing detection after Move()
+        bool wasGrounded = isGrounded;
+
+        // 1) Input -> world X/Z
         Vector2 input = ReadMoveInput();
         Vector3 inputDir = new Vector3(input.x, 0f, input.y);
         if (inputDir.sqrMagnitude > 1e-4f) inputDir.Normalize();
 
-        // 2) Ground info
+        // 2) Ground info (pre-move)
         UpdateGroundInfo();
 
         // 3) Smooth toward target horizontal velocity
@@ -99,10 +137,25 @@ public class IsometricCharacterController : MonoBehaviour
         // 5) Vertical velocity
         velocity.y = isGrounded ? -groundStickForce : velocity.y - gravity * Time.deltaTime;
 
+        // Track max downward speed while airborne (positive value)
+        if (!isGrounded && velocity.y < 0f)
+            maxDownwardSpeedWhileAirborne = Mathf.Max(maxDownwardSpeedWhileAirborne, -velocity.y);
+
         // 6) Combine and move
         velocity.x = horizVel.x;
         velocity.z = horizVel.z;
         controller.Move(velocity * Time.deltaTime);
+
+        // Landing detection (post-move)
+        bool groundedNow = controller.isGrounded;
+        if (!wasGrounded && groundedNow)
+        {
+            HandleLandingShake(maxDownwardSpeedWhileAirborne);
+            maxDownwardSpeedWhileAirborne = 0f; // reset after landing
+        }
+
+        // Keep our cached flag in sync
+        isGrounded = groundedNow;
     }
 
     void UpdateGroundInfo()
@@ -130,11 +183,44 @@ public class IsometricCharacterController : MonoBehaviour
 #if ENABLE_INPUT_SYSTEM
         return _moveAction != null ? Vector2.ClampMagnitude(_moveAction.ReadValue<Vector2>(), 1f) : Vector2.zero;
 #else
-        // Only compiled if you haven't enabled the new Input System define.
         float x = Input.GetAxisRaw(_hor);
         float y = Input.GetAxisRaw(_ver);
         return Vector2.ClampMagnitude(new Vector2(x, y), 1f);
 #endif
+    }
+
+    void HandleLandingShake(float impactSpeed)
+    {
+        if (cameraFollow == null) return;
+        if (Time.time - lastShakeTime < fallShakeCooldown) return;
+
+        // Decide tier first (BIG takes precedence)
+        if (impactSpeed >= bigFallThreshold)
+        {
+            float over = impactSpeed - bigFallThreshold;
+            float magnitude = Mathf.Min(over * bigMagPerUnit, bigMaxMagnitude);
+            cameraFollow.Shake(bigFallDuration, magnitude);
+            lastShakeTime = Time.time;
+        }
+        else if (impactSpeed >= smallFallThreshold)
+        {
+            float over = impactSpeed - smallFallThreshold;
+            float magnitude = Mathf.Min(over * smallMagPerUnit, smallMaxMagnitude);
+            cameraFollow.Shake(smallFallDuration, magnitude);
+            lastShakeTime = Time.time;
+        }
+        // else: no shake for soft landings
+    }
+
+    // ------- Debug Overlay -------
+    void OnGUI()
+    {
+        GUI.color = Color.white;
+        string groundedText = $"IsGrounded: {isGrounded}";
+        string fallSpeedText = $"Falling Speed: {(-velocity.y).ToString("F2")}";
+
+        GUI.Label(new Rect(10, 10, 300, 20), groundedText);
+        GUI.Label(new Rect(10, 30, 300, 20), fallSpeedText);
     }
 
     // Debug helpers
