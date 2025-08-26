@@ -35,16 +35,39 @@ public class MagneticAttractor : MonoBehaviour
     [Tooltip("Layers that block line-of-sight when 'Require Line Of Sight' is enabled.")]
     public LayerMask obstacleLayers = ~0;
 
+    // --- NEW: Proximity self-destruct ---
+    [Header("Proximity Self-Destruct")]
+    [Tooltip("Destroy this object if it stays near 'Ground' for timeToSelfDestruct seconds.")]
+    public bool enableGroundProximityKill = true;
+
+    [Tooltip("Radius used for proximity check. If 0 or less, uses 'range'.")]
+    public float proximityRadius = 0f;
+
+    [Tooltip("Time (seconds) the object must remain within radius of 'Ground' before being destroyed.")]
+    public float timeToSelfDestruct = 1f;
+
+    [Tooltip("Layers treated as 'Ground' for proximity kill. Defaults to the 'Ground' layer if left empty.")]
+    public LayerMask groundLayerMask;
+
     // --- Internals ---
     private static readonly HashSet<MagneticAttractor> All = new HashSet<MagneticAttractor>();
     private Rigidbody _rb;
     private int _id;
+
+    private float _nearGroundTimer;
 
     private void OnEnable()
     {
         _rb = GetComponent<Rigidbody>();
         _id = GetInstanceID();
         All.Add(this);
+
+        // Default to "Ground" layer if none set
+        if (groundLayerMask.value == 0)
+        {
+            int mask = LayerMask.GetMask("Ground");
+            if (mask != 0) groundLayerMask = mask;
+        }
     }
 
     private void OnDisable()
@@ -56,6 +79,7 @@ public class MagneticAttractor : MonoBehaviour
     {
         if (_rb == null) return;
 
+        // --- Magnetic forces ---
         Vector3 myCOM = _rb.worldCenterOfMass;
 
         foreach (var other in All)
@@ -87,14 +111,11 @@ public class MagneticAttractor : MonoBehaviour
             float forceMag;
             if (linearFalloff)
             {
-                // 0 at range, 1 near contact (clamped by minDistance)
-                float d = Mathf.Max(minDistance, dist);
                 float falloff = 1f - Mathf.Clamp01(dist / Mathf.Max(1e-6f, range));
                 forceMag = strength * falloff;
             }
             else
             {
-                // Classic-ish "gravity" style within a hard cutoff
                 float d = Mathf.Max(minDistance, dist);
                 forceMag = strength / Mathf.Pow(d, Mathf.Max(0.0001f, inversePower));
             }
@@ -110,15 +131,51 @@ public class MagneticAttractor : MonoBehaviour
                 otherRb.AddForce(-force, forceMode);
             }
         }
+
+        // --- Ground proximity self-destruct ---
+        if (enableGroundProximityKill && groundLayerMask.value != 0)
+        {
+            float r = (proximityRadius > 0f) ? proximityRadius : range;
+            Vector3 checkPos = _rb.worldCenterOfMass;
+
+            bool nearGround = Physics.CheckSphere(
+                checkPos,
+                r,
+                groundLayerMask,
+                QueryTriggerInteraction.Ignore
+            );
+
+            if (nearGround)
+            {
+                _nearGroundTimer += Time.fixedDeltaTime;
+                if (_nearGroundTimer >= timeToSelfDestruct)
+                {
+                    Destroy(gameObject);
+                    return;
+                }
+            }
+            else
+            {
+                _nearGroundTimer = 0f; // must be continuously near for the full duration
+            }
+        }
     }
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
+        // Magnet range
         Gizmos.color = new Color(0.3f, 0.6f, 1f, 0.25f);
         Gizmos.DrawSphere(transform.position, range);
         Gizmos.color = new Color(0.3f, 0.6f, 1f, 0.9f);
         Gizmos.DrawWireSphere(transform.position, range);
+
+        // Proximity kill radius
+        float r = (proximityRadius > 0f) ? proximityRadius : range;
+        Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.18f);
+        Gizmos.DrawSphere(transform.position, r);
+        Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.9f);
+        Gizmos.DrawWireSphere(transform.position, r);
     }
 #endif
 }
