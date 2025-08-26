@@ -19,13 +19,20 @@ public class IsometricCharacterController : MonoBehaviour
     [Header("Input System")]
     public InputActionReference moveActionRef;
     private InputAction _moveAction;
+
+    [Tooltip("Optional. Sprint button action (Button). If empty, one is created at runtime (Space / Gamepad South).")]
+    public InputActionReference sprintActionRef;
+    private InputAction _sprintAction;
 #else
     private readonly string _hor = "Horizontal";
     private readonly string _ver = "Vertical";
 #endif
 
+    [Header("Sprint (legacy key only used if legacy input is active)")]
+    public KeyCode sprintKey = KeyCode.Space;
+
     [Header("External Motion (simple)")]
-    public PlayerCollisionDebugger collisionDebugger;   // reports StandingOnCollider & PushingContacts
+    public PlayerCollisionDebugger collisionDebugger; // reports StandingOnCollider & PushingContacts
     [Tooltip("Inherit horizontal velocity from the platform you're standing on.")]
     public bool inheritPlatformHorizontal = true;
     [Tooltip("Inherit upward velocity from the platform (ignore downward).")]
@@ -60,8 +67,8 @@ public class IsometricCharacterController : MonoBehaviour
     public float fallShakeCooldown = 0.10f;
 
     private CharacterController controller;
-    private Vector3 velocity;   // (x,z,y) final
-    private Vector3 horizVel;   // player-intent horizontal
+    private Vector3 velocity; // (x,z,y) final
+    private Vector3 horizVel; // player-intent horizontal
     private bool isGrounded;
 
     // side push smoothing state
@@ -82,19 +89,41 @@ public class IsometricCharacterController : MonoBehaviour
     void OnEnable()
     {
 #if ENABLE_INPUT_SYSTEM
-        if (moveActionRef != null) _moveAction = moveActionRef.action;
+        // Move action
+        if (moveActionRef != null)
+            _moveAction = moveActionRef.action;
         else
         {
             _moveAction = new InputAction("Move", InputActionType.Value, expectedControlType: "Vector2");
+
             var wasd = _moveAction.AddCompositeBinding("2DVector");
-            wasd.With("Up", "<Keyboard>/w"); wasd.With("Down", "<Keyboard>/s");
-            wasd.With("Left", "<Keyboard>/a"); wasd.With("Right", "<Keyboard>/d");
+            wasd.With("Up", "<Keyboard>/w");
+            wasd.With("Down", "<Keyboard>/s");
+            wasd.With("Left", "<Keyboard>/a");
+            wasd.With("Right", "<Keyboard>/d");
+
             var arrows = _moveAction.AddCompositeBinding("2DVector");
-            arrows.With("Up", "<Keyboard>/upArrow"); arrows.With("Down", "<Keyboard>/downArrow");
-            arrows.With("Left", "<Keyboard>/leftArrow"); arrows.With("Right", "<Keyboard>/rightArrow");
+            arrows.With("Up", "<Keyboard>/upArrow");
+            arrows.With("Down", "<Keyboard>/downArrow");
+            arrows.With("Left", "<Keyboard>/leftArrow");
+            arrows.With("Right", "<Keyboard>/rightArrow");
+
             _moveAction.AddBinding("<Gamepad>/leftStick");
         }
         _moveAction.Enable();
+
+        // Sprint action
+        if (sprintActionRef != null)
+            _sprintAction = sprintActionRef.action;
+        else
+        {
+            _sprintAction = new InputAction("Sprint", InputActionType.Button);
+            _sprintAction.AddBinding("<Keyboard>/space");
+            _sprintAction.AddBinding("<Gamepad>/buttonSouth"); // A/Cross
+            // You can add shift too if desired:
+            // _sprintAction.AddBinding("<Keyboard>/leftShift");
+        }
+        _sprintAction.Enable();
 #endif
     }
 
@@ -102,6 +131,7 @@ public class IsometricCharacterController : MonoBehaviour
     {
 #if ENABLE_INPUT_SYSTEM
         _moveAction?.Disable();
+        _sprintAction?.Disable();
 #endif
     }
 
@@ -116,8 +146,19 @@ public class IsometricCharacterController : MonoBehaviour
         if (inputDir.sqrMagnitude > 1e-4f) inputDir.Normalize();
 
         Vector3 targetHorizVel = inputDir * moveSpeed;
-        float accel = (targetHorizVel.sqrMagnitude > 1e-4f) ? acceleration : deceleration;
-        horizVel = Vector3.MoveTowards(horizVel, targetHorizVel, accel * dt);
+
+        // --- Sprint: instantly snap to max speed while pressed
+        bool isSprinting = IsSprintPressed();
+        if (isSprinting)
+        {
+            horizVel = targetHorizVel; // instant, no acceleration
+        }
+        else
+        {
+            // Normal smooth acceleration/deceleration
+            float accel = (targetHorizVel.sqrMagnitude > 1e-4f) ? acceleration : deceleration;
+            horizVel = Vector3.MoveTowards(horizVel, targetHorizVel, accel * dt);
+        }
 
         // --- Platform inherit (very simple)
         Vector3 platHorizVel = Vector3.zero;
@@ -134,11 +175,12 @@ public class IsometricCharacterController : MonoBehaviour
             }
         }
 
-        // --- Optional side push (simple & tame)
+        // --- Optional side push
         Vector3 sidePushTarget = Vector3.zero;
         if (enableSidePush && collisionDebugger && collisionDebugger.PushingContacts.Count > 0)
         {
-            Vector3 sum = Vector3.zero; int count = 0;
+            Vector3 sum = Vector3.zero;
+            int count = 0;
             foreach (var col in collisionDebugger.PushingContacts)
             {
                 if (!col) continue;
@@ -151,13 +193,16 @@ public class IsometricCharacterController : MonoBehaviour
                 Vector3 closest = col.ClosestPoint(transform.position);
                 Vector3 normal = (transform.position - closest);
                 if (normal.sqrMagnitude < 1e-6f) normal = (transform.position - col.bounds.center);
-                if (normal.sqrMagnitude > 1e-6f) normal.Normalize(); else normal = Vector3.forward;
+                if (normal.sqrMagnitude > 1e-6f) normal.Normalize();
+                else normal = Vector3.forward;
 
                 v = Vector3.ProjectOnPlane(v, normal);
                 if (sidePushIgnoreVertical) v.y = 0f;
 
-                sum += v; count++;
+                sum += v;
+                count++;
             }
+
             if (count > 0)
             {
                 sidePushTarget = sum / count;
@@ -167,11 +212,22 @@ public class IsometricCharacterController : MonoBehaviour
                 float hMag = h.magnitude;
                 if (hMag > sidePushMaxSpeed && hMag > 1e-4f)
                     h *= sidePushMaxSpeed / hMag;
-                sidePushTarget.x = h.x; sidePushTarget.z = h.z;
+
+                sidePushTarget.x = h.x;
+                sidePushTarget.z = h.z;
+
                 if (sidePushIgnoreVertical) sidePushTarget.y = 0f;
             }
         }
-        sidePushVelCurrent = Vector3.SmoothDamp(sidePushVelCurrent, sidePushTarget, ref sidePushVelRef, sidePushSmoothTime, Mathf.Infinity, dt);
+
+        sidePushVelCurrent = Vector3.SmoothDamp(
+            sidePushVelCurrent,
+            sidePushTarget,
+            ref sidePushVelRef,
+            sidePushSmoothTime,
+            Mathf.Infinity,
+            dt
+        );
 
         // --- Vertical + landing tracking
         isGrounded = controller.isGrounded;
@@ -184,7 +240,7 @@ public class IsometricCharacterController : MonoBehaviour
         {
             velocity.y -= gravity * dt;
 
-            // Track peak downward speed for landing shake
+            // Track peak downward speed
             if (velocity.y < 0f)
                 maxDownwardSpeedWhileAirborne = Mathf.Max(maxDownwardSpeedWhileAirborne, -velocity.y);
         }
@@ -193,10 +249,9 @@ public class IsometricCharacterController : MonoBehaviour
         Vector3 totalHoriz = horizVel + platHorizVel + new Vector3(sidePushVelCurrent.x, 0f, sidePushVelCurrent.z);
         velocity.x = totalHoriz.x;
         velocity.z = totalHoriz.z;
-
         controller.Move(velocity * dt);
 
-        // --- Landing detection -> shake
+        // --- Landing detection
         bool groundedNow = controller.isGrounded;
         if (!wasGrounded && groundedNow)
         {
@@ -217,7 +272,18 @@ public class IsometricCharacterController : MonoBehaviour
 #endif
     }
 
-    // --- Camera shake on landing (same logic you had) ---
+    bool IsSprintPressed()
+    {
+#if ENABLE_INPUT_SYSTEM
+        if (_sprintAction != null) return _sprintAction.IsPressed();
+        // Fallback if actions weren’t created for some reason
+        return Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
+#else
+        return Input.GetKey(sprintKey);
+#endif
+    }
+
+    // --- Camera shake on landing
     void HandleLandingShake(float impactSpeed)
     {
         if (cameraFollow == null) return;
