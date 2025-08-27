@@ -49,6 +49,7 @@ public class PlayerAnimationController : MonoBehaviour
     // Fallback velocity tracker when no CharacterController is present
     private Vector3 _prevPos;
 
+    public bool IsMoving { get; private set; } 
     private void Awake()
     {
         if (animator == null)
@@ -111,7 +112,7 @@ public class PlayerAnimationController : MonoBehaviour
         bool isFalling = (characterController != null) && !characterController.isGrounded;
         bool isCarrying = alwaysCarrying;
 
-        bool noInput = inputWorld.sqrMagnitude < 0.0001f;
+        bool noInput = inputWorld.sqrMagnitude < 0.0001f; 
         bool isMoving = speed > moveSpeedEpsilon && !noInput;
         bool opposite = false;
         if (!noInput && speed >= minSpeedForOpposite)
@@ -130,7 +131,8 @@ public class PlayerAnimationController : MonoBehaviour
         animator.SetBool("isFalling", isFalling);
         animator.SetBool("isSlowing", isSlowing);
         animator.SetBool("isBackwards", isBackwards);
-
+        IsMoving = isMoving;
+        
         _prevPos = transform.position;
     }
 
@@ -180,4 +182,5 @@ public class PlayerAnimationController : MonoBehaviour
         backwardsXEpsilon = Mathf.Max(0f, backwardsXEpsilon);
     }
 #endif
+
 }
