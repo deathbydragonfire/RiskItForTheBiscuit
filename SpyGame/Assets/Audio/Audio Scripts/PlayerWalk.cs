@@ -8,12 +8,12 @@ public class PlayerWalk : MonoBehaviour
     public AudioClip[] footsteps;
 
     [SerializeField] [Range(0.001f, 1f)] private float stepInterval = 0.5f;
-
+    [SerializeField] private PlayerAnimationController playerAnim;
 
     private AudioSource audioSource;
     private int lastClipIndex = -1; 
     private float timer;
-    private bool isPlaying;
+    private bool isPlaying =true;
 
     void Awake()
     {
@@ -27,7 +27,7 @@ public class PlayerWalk : MonoBehaviour
         if (!isPlaying || footsteps.Length == 0) return;
 
         timer += Time.deltaTime;
-        if (timer >= stepInterval)
+        if (timer >= stepInterval && playerAnim.IsMoving)
         {
             PlayFootstep();
             timer = 0f;
@@ -60,6 +60,7 @@ public class PlayerWalk : MonoBehaviour
         while (clipIndex == lastClipIndex && footsteps.Length > 1);
 
         lastClipIndex = clipIndex;
+        Debug.Log("Playing a footstep");
         audioSource.PlayOneShot(footsteps[clipIndex]);
     }
 }

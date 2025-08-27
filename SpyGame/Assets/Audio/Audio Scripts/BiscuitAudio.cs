@@ -22,5 +22,6 @@ public class BiscuitAudio : MonoBehaviour
     {
         //send to audiomanager as this object will be destroyed soon
         //AudioMananger.Instance.Play(biscuitPops[Random.Range(0, biscuitPops.Count)]);
+        Debug.Log("playing biscuit pop");
     }
 }
