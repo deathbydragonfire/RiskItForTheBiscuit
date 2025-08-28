@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,27 +8,21 @@ public class SpawnPickupTrigger : MonoBehaviour
     [Tooltip("Layer name that represents the Player.")]
     public string playerLayerName = "Player";
 
-    [Header("Trigger Behavior")]
-    [Tooltip("How many items to spawn when triggered.")]
+    [Header("Spawn Settings")]
+    [Tooltip("How many items to spawn when triggered (all in the same frame).")]
     public int spawnCount = 1;
 
-    [Tooltip("Delay between items in a burst (seconds). 0 = all at once.")]
-    public float burstInterval = 0.0f;
-
-    // Auto-found spawner (only one per level)
-    private StackTopSpawner _spawner;
+    private StackTopSpawner _spawner; // auto-found (only one per level)
     private int _playerLayer = -1;
     private bool _triggered = false;
 
     private void Reset()
     {
-        // Ensure trigger collider
         var col = GetComponent<Collider>();
         if (col) col.isTrigger = true;
 
         playerLayerName = "Player";
         spawnCount = 1;
-        burstInterval = 0f;
     }
 
     private void OnValidate()
@@ -38,7 +31,6 @@ public class SpawnPickupTrigger : MonoBehaviour
         if (col && !col.isTrigger) col.isTrigger = true;
 
         if (spawnCount < 1) spawnCount = 1;
-        if (burstInterval < 0f) burstInterval = 0f;
 
         _playerLayer = LayerMask.NameToLayer(playerLayerName);
     }
@@ -58,6 +50,7 @@ public class SpawnPickupTrigger : MonoBehaviour
     {
         if (_spawner != null) return true;
 
+        // Active objects first
         _spawner = FindObjectOfType<StackTopSpawner>();
         if (_spawner != null)
         {
@@ -65,7 +58,7 @@ public class SpawnPickupTrigger : MonoBehaviour
             return true;
         }
 
-        // Fallback: include inactive roots
+        // Include inactive in active scene roots
         var scene = SceneManager.GetActiveScene();
         foreach (var root in scene.GetRootGameObjects())
         {
@@ -84,38 +77,20 @@ public class SpawnPickupTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_triggered) return; // already firing/dying
+        if (_triggered) return;
         if (!IsPlayer(other)) return;
 
-        if (_spawner == null && !TryResolveSpawner()) return;
+        if (_spawner == null && !TryResolveSpawner(true)) return;
 
         _triggered = true;
-
-        // Prevent re-entry while we spawn
         var col = GetComponent<Collider>();
         if (col) col.enabled = false;
 
-        if (spawnCount == 1 || burstInterval <= 0f)
-        {
-            // Instant spawn(s), then die immediately
-            for (int i = 0; i < spawnCount; i++) _spawner.SpawnNow();
-            Destroy(gameObject);
-        }
-        else
-        {
-            // Burst over time, then die
-            StartCoroutine(SpawnBurstAndDie(spawnCount, burstInterval));
-        }
-    }
+        // Spawn all in the same frame
+        for (int i = 0; i < spawnCount; i++)
+            _spawner.SpawnNow();
 
-    private IEnumerator SpawnBurstAndDie(int count, float interval)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (_spawner) _spawner.SpawnNow();
-            if (i < count - 1 && interval > 0f)
-                yield return new WaitForSeconds(interval);
-        }
+        // Then destroy this trigger object
         Destroy(gameObject);
     }
 

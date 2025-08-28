@@ -4,7 +4,6 @@ using UnityEngine;
 public class StackTopSpawner : MonoBehaviour
 {
     [Header("Prefab")]
-    [Tooltip("What to spawn on top of the Stack.")]
     public GameObject prefab;
 
     [Header("Placement")]
@@ -23,13 +22,11 @@ public class StackTopSpawner : MonoBehaviour
 
     private void Reset()
     {
-        // By default, look only at the 'Stack' layer
         stackLayers = LayerMask.GetMask("Stack");
+        spawnOffsetY = 0.20f;
+        maxScanDistance = 100f;
     }
 
-    /// <summary>
-    /// Call this from UI, events, or via the Context Menu to spawn now.
-    /// </summary>
     [ContextMenu("Spawn Now")]
     public void SpawnNow()
     {
@@ -41,16 +38,11 @@ public class StackTopSpawner : MonoBehaviour
 
         Vector3 origin = transform.position;
 
-        // Find the highest top surface of any 'Stack' collider intersected by the upward ray.
+        // No XZ offset — probe straight up from the spawner's XZ
         float topY = GetTopYAlongUp(origin);
-        float targetY = topY + spawnOffsetY;
+        Vector3 spawnPos = new Vector3(origin.x, topY + spawnOffsetY, origin.z);
 
-        Vector3 spawnPos = new Vector3(origin.x, targetY, origin.z);
-
-        // Spawn with prefab's default rotation; change if you prefer aligning to spawner.
-        GameObject spawned = Instantiate(prefab, spawnPos, prefab.transform.rotation, parentForSpawned);
-        // Example alternative: align Y-rotation with this spawner
-        // spawned.transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+        Instantiate(prefab, spawnPos, prefab.transform.rotation, parentForSpawned);
     }
 
     /// <summary>
@@ -60,27 +52,24 @@ public class StackTopSpawner : MonoBehaviour
     private float GetTopYAlongUp(Vector3 origin)
     {
         Ray ray = new Ray(origin, Vector3.up);
-
-        // Collect all entries into colliders along the vertical line
         RaycastHit[] hits = Physics.RaycastAll(ray, maxScanDistance, stackLayers, QueryTriggerInteraction.Ignore);
 
         if (hits == null || hits.Length == 0)
-        {
-            // Nothing above—treat current Y as the open space baseline.
             return origin.y;
-        }
 
         float highestTop = origin.y;
 
         for (int i = 0; i < hits.Length; i++)
         {
-            // Ignore if the hit collider is this object or a child of it
-            if (hits[i].collider && (hits[i].collider.transform == transform || hits[i].collider.transform.IsChildOf(transform)))
+            var col = hits[i].collider;
+            if (!col) continue;
+
+            // Ignore ourselves/children
+            if (col.transform == transform || col.transform.IsChildOf(transform))
                 continue;
 
-            float colliderTopY = hits[i].collider.bounds.max.y;
-            if (colliderTopY > highestTop)
-                highestTop = colliderTopY;
+            float top = col.bounds.max.y;
+            if (top > highestTop) highestTop = top;
         }
 
         return highestTop;
@@ -88,7 +77,6 @@ public class StackTopSpawner : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        // Visualize the upward scan
         Gizmos.color = Color.cyan;
         Vector3 o = transform.position;
         Gizmos.DrawLine(o, o + Vector3.up * maxScanDistance);
