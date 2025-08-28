@@ -8,20 +8,18 @@ public class BiscuitAudio : MonoBehaviour
 {
     public List<AudioClip> biscuitPops; 
     public List<AudioClip> biscuitDrops;
-    private AudioSource audioSource;
+   [SerializeField] private AudioSource audioSource;
+   [SerializeField] private MagneticAttractor magneticAttractor;
 
-    private void Awake()
-    {
-        audioSource = GetComponent<AudioSource>();
-    }
+   private void Start()
+   {
+       magneticAttractor.OnBiscuitDropped.AddListener(PlayBiscuitDrop);
+       magneticAttractor.OnSelfDestruct.AddListener(PlayBiscuitPop);
+   }
 
-    [ProButton]
+   [ProButton]
     public void PlayBiscuitDrop() => audioSource.PlayOneShot(biscuitDrops[Random.Range(0, biscuitDrops.Count)]);
 
-    public void PlayBiscuitPop()
-    {
-        //send to audiomanager as this object will be destroyed soon
-        //AudioMananger.Instance.Play(biscuitPops[Random.Range(0, biscuitPops.Count)]);
-        Debug.Log("playing biscuit pop");
-    }
+    public void PlayBiscuitPop() =>   AudioManager.Instance.PlayOneShot(biscuitPops[Random.Range(0, biscuitPops.Count)], AudioRandomizeMode.Both);
+   
 }

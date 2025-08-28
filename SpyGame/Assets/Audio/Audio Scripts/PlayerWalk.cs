@@ -60,7 +60,6 @@ public class PlayerWalk : MonoBehaviour
         while (clipIndex == lastClipIndex && footsteps.Length > 1);
 
         lastClipIndex = clipIndex;
-        Debug.Log("Playing a footstep");
         audioSource.PlayOneShot(footsteps[clipIndex]);
     }
 }
