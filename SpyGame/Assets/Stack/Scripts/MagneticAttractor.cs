@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Rigidbody))]
@@ -55,6 +56,10 @@ public class MagneticAttractor : MonoBehaviour
     private int _id;
 
     private float _nearGroundTimer;
+
+   [HideInInspector] public UnityEvent OnBiscuitDropped;
+   [HideInInspector] public UnityEvent OnSelfDestruct;
+    private bool hasDropped = false;
 
     private void OnEnable()
     {
@@ -147,18 +152,31 @@ public class MagneticAttractor : MonoBehaviour
 
             if (nearGround)
             {
+                CheckForFirstDrop();
                 _nearGroundTimer += Time.fixedDeltaTime;
                 if (_nearGroundTimer >= timeToSelfDestruct)
                 {
+                    OnSelfDestruct?.Invoke();
                     Destroy(gameObject);
                     return;
                 }
             }
             else
             {
+                hasDropped = false;
                 _nearGroundTimer = 0f; // must be continuously near for the full duration
             }
         }
+    }
+
+    private void CheckForFirstDrop()
+    {
+        if (!hasDropped)
+        {
+            hasDropped = true;
+            OnBiscuitDropped?.Invoke();
+        }
+        
     }
 
 #if UNITY_EDITOR

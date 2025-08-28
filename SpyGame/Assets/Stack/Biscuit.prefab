@@ -176,8 +176,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6527771798572490460}
-  - component: {fileID: 7833012507533489189}
   - component: {fileID: 609180800865403916}
+  - component: {fileID: 7833012507533489189}
   m_Layer: 6
   m_Name: Audio
   m_TagString: Untagged
@@ -200,6 +200,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7622841382772400756}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &609180800865403916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8697422267668046864}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 724c3901dc7b19a468b4bab59bbc099c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  biscuitPops:
+  - {fileID: 8300000, guid: cefe18e88951ce24c972082462403b98, type: 3}
+  - {fileID: 8300000, guid: d420f96414aed5c49bec95a0915b9368, type: 3}
+  - {fileID: 8300000, guid: eb926236ae646e24c906b9fe363d06ca, type: 3}
+  biscuitDrops:
+  - {fileID: 8300000, guid: 292844c2730c6f94494c54928b4c6011, type: 3}
+  - {fileID: 8300000, guid: 0236f3e8b1db2df468100903ffaa444d, type: 3}
+  - {fileID: 8300000, guid: d3031ad1be6009f4b882c1c026b9e479, type: 3}
+  - {fileID: 8300000, guid: 3b090830594a68141b5b79c0b8d4395a, type: 3}
+  audioSource: {fileID: 7833012507533489189}
+  magneticAttractor: {fileID: 6508417831784818772}
 --- !u!82 &7833012507533489189
 AudioSource:
   m_ObjectHideFlags: 0
@@ -297,24 +320,3 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &609180800865403916
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8697422267668046864}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 724c3901dc7b19a468b4bab59bbc099c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  biscuitPops:
-  - {fileID: 8300000, guid: cefe18e88951ce24c972082462403b98, type: 3}
-  - {fileID: 8300000, guid: d420f96414aed5c49bec95a0915b9368, type: 3}
-  - {fileID: 8300000, guid: eb926236ae646e24c906b9fe363d06ca, type: 3}
-  biscuitDrops:
-  - {fileID: 8300000, guid: 292844c2730c6f94494c54928b4c6011, type: 3}
-  - {fileID: 8300000, guid: 0236f3e8b1db2df468100903ffaa444d, type: 3}
-  - {fileID: 8300000, guid: d3031ad1be6009f4b882c1c026b9e479, type: 3}
-  - {fileID: 8300000, guid: 3b090830594a68141b5b79c0b8d4395a, type: 3}
