@@ -70,6 +70,10 @@ public class MaintainRelativeToTarget : MonoBehaviour
     [Tooltip("Animator Bool parameter to flip on pickup/putdown.")]
     public string carryingBoolParam = "isCarrying";
 
+    [Header("Defaults")]
+    [Tooltip("If true, sets the Animator 'isCarrying' to true on Start().")]
+    public bool startWithCarryingTrue = true;
+
     // Captured offsets to target/hold
     [SerializeField] private Vector3 localOffset;
     [SerializeField] private Quaternion localRotationOffset = Quaternion.identity;
@@ -109,6 +113,13 @@ public class MaintainRelativeToTarget : MonoBehaviour
 #endif
         if (target != null && captureOffsetOnEnable) CaptureOffsets();
         cachedTarget = target;
+    }
+
+    // Set default carrying state AFTER everything is initialized
+    void Start()
+    {
+        if (startWithCarryingTrue)
+            SetCarrying(true);
     }
 
     void OnDisable()
@@ -252,8 +263,7 @@ public class MaintainRelativeToTarget : MonoBehaviour
         }
 
         if (animatorHasParam)
-            playerAnimator.SetBool(carryingHash, value);
-        // else: silently ignore to avoid spammy warnings if the param doesn't exist
+            playerAnimator.SetBool(carryingBoolParam, value);
     }
 
     bool EnsurePlayerAnimator()
@@ -431,13 +441,5 @@ public class MaintainRelativeToTarget : MonoBehaviour
         }
     }
 
-#if UNITY_EDITOR
-    void OnValidate()
-    {
-        stackLayer = LayerMask.NameToLayer(stackLayerName);
-        playerLayer = LayerMask.NameToLayer(playerLayerName);
-        carryingHash = Animator.StringToHash(carryingBoolParam);
-        animatorParamCached = false; // re-check if name changes
-    }
-#endif
+
 }

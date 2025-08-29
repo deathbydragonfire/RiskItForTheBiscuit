@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Collider))]
@@ -14,29 +15,27 @@ public class GoalAreaScorer : MonoBehaviour
     public int[] starThresholds = new int[] { 1, 3, 6 };
     public GameObject starPrefab;
 
-    [Header("Spawn Pattern")]
-    [Tooltip("Derive ring center/size from this trigger's bounds.")]
+    [Header("Spawn Pattern (camera-facing circle)")]
     public bool autoFromTriggerBounds = true;
-    [Tooltip("Extra ring radius added beyond bounds.")]
     public float radiusPadding = 0.25f;
-    [Tooltip("Lift the ring above the trigger along the camera's Up.")]
     public float heightPadding = 0.20f;
-
-    [Tooltip("Used only if autoFromTriggerBounds = OFF.")]
-    public float spawnRadius = 1.0f;
-    [Tooltip("Used only if autoFromTriggerBounds = OFF (applied along camera up).")]
-    public float spawnHeightOffset = 1.0f;
-
-    [Tooltip("Starting angle (deg) around the camera-facing circle (0 = camera right).")]
+    public float spawnRadius = 1.0f;            // used if autoFromTriggerBounds = false
+    public float spawnHeightOffset = 1.0f;      // used if autoFromTriggerBounds = false (along camera up)
     public float startAngleDeg = 90f;
     public bool useFullCircle = false;
     public float arcDegrees = 120f;
 
     [Header("Camera-Facing Ring")]
-    [Tooltip("Camera used to orient the circle and billboard stars. If empty, uses Camera.main.")]
     public Camera targetCamera;
-    [Tooltip("If ON, stars will look at the camera.")]
     public bool starsFaceCamera = true;
+
+    [Header("Level Progression")]
+    [Tooltip("Advance to the next scene after stars spawn, if possible.")]
+    public bool autoAdvanceNextLevel = true;
+    [Tooltip("Delay (seconds, real time) before advancing.")]
+    public float nextLevelDelay = 3f;
+    [Tooltip("Optional explicit scene name to load if there is no 'next' build index.")]
+    public string fallbackSceneName = "";
 
     [Header("Debug")]
     public bool debugLog = true;
@@ -49,26 +48,26 @@ public class GoalAreaScorer : MonoBehaviour
     private Coroutine _waitCo;
     private Collider _trigger;
 
-    private void Awake()
+    void Awake()
     {
         _bagLayer = LayerMask.NameToLayer(bagLayerName);
-
         _trigger = GetComponent<Collider>();
-        if (_trigger == null) { Debug.LogError($"{debugPrefix} No collider found."); enabled = false; return; }
+        if (!_trigger) { Debug.LogError($"{debugPrefix} No collider found."); enabled = false; return; }
         if (!_trigger.isTrigger) Debug.LogWarning($"{debugPrefix} Collider should be set to 'Is Trigger'.");
 
+        // normalize thresholds
         if (starThresholds != null && starThresholds.Length > 1)
             for (int i = 1; i < starThresholds.Length; i++)
                 if (starThresholds[i] < starThresholds[i - 1])
                     starThresholds[i] = starThresholds[i - 1];
     }
 
-    private void OnDisable()
+    void OnDisable()
     {
         if (_waitCo != null) { StopCoroutine(_waitCo); _waitCo = null; }
     }
 
-    private void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other)
     {
         if (_scored) return;
         if (other.gameObject.layer != _bagLayer) return;
@@ -81,7 +80,7 @@ public class GoalAreaScorer : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    void OnTriggerExit(Collider other)
     {
         if (_scored) return;
         if (other.gameObject.layer != _bagLayer) return;
@@ -94,7 +93,7 @@ public class GoalAreaScorer : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitAndScore(Collider bagCol)
+    IEnumerator WaitAndScore(Collider bagCol)
     {
         float t = 0f;
         while (t < requiredOverlapTime)
@@ -106,12 +105,12 @@ public class GoalAreaScorer : MonoBehaviour
         DoScore(bagCol);
     }
 
-    private void DoScore(Collider bagCol)
+    void DoScore(Collider bagCol)
     {
         if (_scored) return;
 
-        var counter = bagCol.GetComponentInParent<SackBiscuitsCounterUI>();
-        if (counter == null) counter = bagCol.GetComponentInChildren<SackBiscuitsCounterUI>();
+        var counter = bagCol.GetComponentInParent<SackBiscuitsCounterUI>()
+                   ?? bagCol.GetComponentInChildren<SackBiscuitsCounterUI>();
 
         int score = counter ? counter.BiscuitsCount : 0;
         if (!counter) Debug.LogWarning($"{debugPrefix} No SackBiscuitsCounterUI found on bag; score = 0.");
@@ -122,14 +121,17 @@ public class GoalAreaScorer : MonoBehaviour
         if (debugLog)
         {
             string bagName = bagCol.transform.root ? bagCol.transform.root.name : bagCol.name;
-            Debug.Log($"{debugPrefix} GOAL TRIGGERED on '{name}' by bag '{bagName}'. Score={score}, Stars={stars}. Disabling scorer.");
+            Debug.Log($"{debugPrefix} GOAL TRIGGERED on '{name}' by bag '{bagName}'. Score={score}, Stars={stars}.");
         }
 
-        _scored = true;
-        enabled = false; // one-shot
+        _scored = true;                 // prevent re-scoring
+        if (_trigger) _trigger.enabled = false; // stop further overlaps while we wait
+
+        if (autoAdvanceNextLevel)
+            StartCoroutine(AdvanceAfterDelayRealtime(nextLevelDelay));
     }
 
-    private int CalculateStars(int score)
+    int CalculateStars(int score)
     {
         if (starThresholds == null || starThresholds.Length == 0) return 0;
         int stars = 0;
@@ -138,39 +140,32 @@ public class GoalAreaScorer : MonoBehaviour
         return stars;
     }
 
-    // ---------------- Camera-facing ring spawn ----------------
-    private void SpawnStarsCameraCircle(int count)
+    // -------- camera-facing ring spawn --------
+    void SpawnStarsCameraCircle(int count)
     {
         if (count <= 0 || starPrefab == null) return;
 
-        Camera cam = targetCamera != null ? targetCamera : Camera.main;
-        if (cam == null)
+        Camera cam = targetCamera ? targetCamera : Camera.main;
+        if (!cam)
         {
-            Debug.LogWarning($"{debugPrefix} No camera found. Falling back to world-XZ circle.");
-            SpawnStarsWorldXZ(count);
+            if (debugLog) Debug.LogWarning($"{debugPrefix} No camera found; cannot place camera-facing ring.");
             return;
         }
 
-        // Circle basis in the camera plane
-        Vector3 right = cam.transform.right; // 0° direction
-        Vector3 up = cam.transform.up;    // 90° direction
+        Vector3 right = cam.transform.right;
+        Vector3 up = cam.transform.up;
 
-        // Center & radius
         Vector3 center;
         float radius;
 
-        if (autoFromTriggerBounds && _trigger != null)
+        if (autoFromTriggerBounds && _trigger)
         {
             Bounds b = _trigger.bounds;
-
-            // Project AABB extents onto camera right/up to estimate a good radius in the camera plane
             Vector3 absRight = new Vector3(Mathf.Abs(right.x), Mathf.Abs(right.y), Mathf.Abs(right.z));
             Vector3 absUp = new Vector3(Mathf.Abs(up.x), Mathf.Abs(up.y), Mathf.Abs(up.z));
             float rRight = Vector3.Dot(absRight, b.extents);
             float rUp = Vector3.Dot(absUp, b.extents);
             radius = Mathf.Max(rRight, rUp) + radiusPadding;
-
-            // Lift above top along camera up
             float lift = Vector3.Dot(absUp, b.extents) + heightPadding;
             center = b.center + up * lift;
         }
@@ -180,42 +175,6 @@ public class GoalAreaScorer : MonoBehaviour
             center = transform.position + up * spawnHeightOffset;
         }
 
-        // Spawn unparented; optionally billboard toward camera
-        if (useFullCircle)
-        {
-            float step = 360f / count;
-            for (int i = 0; i < count; i++)
-            {
-                float ang = startAngleDeg + step * i;
-                Vector3 pos = center + (right * Mathf.Cos(ang * Mathf.Deg2Rad) + up * Mathf.Sin(ang * Mathf.Deg2Rad)) * radius;
-                Quaternion rot = starsFaceCamera ? Quaternion.LookRotation((cam.transform.position - pos).normalized, up)
-                                                 : Quaternion.identity;
-                Instantiate(starPrefab, pos, rot);
-            }
-        }
-        else
-        {
-            float step = (count == 1) ? 0f : (arcDegrees / (count - 1));
-            float start = startAngleDeg - arcDegrees * 0.5f;
-            for (int i = 0; i < count; i++)
-            {
-                float ang = start + step * i;
-                Vector3 pos = center + (right * Mathf.Cos(ang * Mathf.Deg2Rad) + up * Mathf.Sin(ang * Mathf.Deg2Rad)) * radius;
-                Quaternion rot = starsFaceCamera ? Quaternion.LookRotation((cam.transform.position - pos).normalized, up)
-                                                 : Quaternion.identity;
-                Instantiate(starPrefab, pos, rot);
-            }
-        }
-    }
-
-    // Fallback: old world-XZ ring
-    private void SpawnStarsWorldXZ(int count)
-    {
-        Bounds b = _trigger.bounds;
-        float radius = Mathf.Max(b.extents.x, b.extents.z) + radiusPadding;
-        float y = b.max.y + heightPadding;
-        Vector3 center = new Vector3(b.center.x, y, b.center.z);
-
         float step = useFullCircle ? 360f / count : (count == 1 ? 0f : arcDegrees / (count - 1));
         float start = useFullCircle ? startAngleDeg : startAngleDeg - arcDegrees * 0.5f;
 
@@ -223,8 +182,44 @@ public class GoalAreaScorer : MonoBehaviour
         {
             float ang = start + step * i;
             float rad = ang * Mathf.Deg2Rad;
-            Vector3 pos = center + new Vector3(Mathf.Cos(rad), 0f, Mathf.Sin(rad)) * radius;
-            Instantiate(starPrefab, pos, Quaternion.identity);
+            Vector3 pos = center + (right * Mathf.Cos(rad) + up * Mathf.Sin(rad)) * radius;
+            Quaternion rot = starsFaceCamera ? Quaternion.LookRotation((cam.transform.position - pos).normalized, up)
+                                             : Quaternion.identity;
+            Instantiate(starPrefab, pos, rot); // unparented
         }
+    }
+
+    // -------- level advance --------
+    IEnumerator AdvanceAfterDelayRealtime(float delaySec)
+    {
+        yield return new WaitForSecondsRealtime(Mathf.Max(0f, delaySec));
+        TryAdvanceScene();
+    }
+
+    void TryAdvanceScene()
+    {
+        var current = SceneManager.GetActiveScene();
+        int thisIdx = current.buildIndex;
+        int total = SceneManager.sceneCountInBuildSettings;
+
+        // Next by build index
+        if (thisIdx >= 0 && thisIdx + 1 < total)
+        {
+            if (debugLog) Debug.Log($"{debugPrefix} Loading next scene by index: {thisIdx + 1}/{total - 1}");
+            SceneManager.LoadSceneAsync(thisIdx + 1, LoadSceneMode.Single);
+            return;
+        }
+
+        // Optional fallback by name
+        if (!string.IsNullOrWhiteSpace(fallbackSceneName) &&
+            Application.CanStreamedLevelBeLoaded(fallbackSceneName))
+        {
+            if (debugLog) Debug.Log($"{debugPrefix} Loading fallback scene by name: {fallbackSceneName}");
+            SceneManager.LoadSceneAsync(fallbackSceneName, LoadSceneMode.Single);
+            return;
+        }
+
+        if (debugLog)
+            Debug.Log($"{debugPrefix} No next scene found in Build Settings and no valid fallback; staying on '{current.name}'.");
     }
 }

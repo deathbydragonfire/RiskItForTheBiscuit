@@ -5,11 +5,11 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Drives Animator booleans (no speed multiplier):
-///  - "isMoving"    : true if horizontal speed (XZ) > threshold
-///  - "isCarrying"  : always true (for now)
+///  - "isMoving"    : true if horizontal speed (XZ) > threshold AND there's input
 ///  - "isFalling"   : true if CharacterController exists and !isGrounded
 ///  - "isSlowing"   : true if no input OR input opposes current horizontal velocity
 ///  - "isBackwards" : true if moving along world -X (vx < -epsilon)
+///  - "isCarrying"  : OPTIONAL — only written if 'driveIsCarrying' is true
 /// </summary>
 [DisallowMultipleComponent]
 public class PlayerAnimationController : MonoBehaviour
@@ -38,9 +38,15 @@ public class PlayerAnimationController : MonoBehaviour
     [Tooltip("Dot threshold for 'opposite direction' check (<= means opposite).")]
     [SerializeField, Range(-1f, 0f)] private float oppositeDirDot = -0.35f;
 
-    [Header("Carry (temp)")]
-    [Tooltip("Spec says carrying is always true for now.")]
-    [SerializeField] private bool alwaysCarrying = true;
+    [Header("Carry Control")]
+    [Tooltip("If OFF (default), this script never writes 'isCarrying' (let other scripts control it).")]
+    [SerializeField] private bool driveIsCarrying = false;
+
+    [Tooltip("Value to write when 'Drive Is Carrying' is ON.")]
+    [SerializeField] private bool carryDebugValue = true;
+
+    [Tooltip("Animator bool parameter name for carrying.")]
+    [SerializeField] private string carryingParam = "isCarrying";
 
     [Header("Backwards (-X)")]
     [Tooltip("Small world-space X speed needed before we consider motion as -X.")]
@@ -49,7 +55,8 @@ public class PlayerAnimationController : MonoBehaviour
     // Fallback velocity tracker when no CharacterController is present
     private Vector3 _prevPos;
 
-    public bool IsMoving { get; private set; } 
+    public bool IsMoving { get; private set; }
+
     private void Awake()
     {
         if (animator == null)
@@ -94,6 +101,7 @@ public class PlayerAnimationController : MonoBehaviour
     {
 #if ENABLE_INPUT_SYSTEM
         if (_defaultMove != null && _defaultMove.enabled) _defaultMove.Disable();
+        if (_moveAction != null && _moveAction != _defaultMove && _moveAction.enabled) _moveAction.Disable();
 #endif
     }
 
@@ -110,10 +118,10 @@ public class PlayerAnimationController : MonoBehaviour
 
         // --- Flags ---
         bool isFalling = (characterController != null) && !characterController.isGrounded;
-        bool isCarrying = alwaysCarrying;
 
-        bool noInput = inputWorld.sqrMagnitude < 0.0001f; 
+        bool noInput = inputWorld.sqrMagnitude < 0.0001f;
         bool isMoving = speed > moveSpeedEpsilon && !noInput;
+
         bool opposite = false;
         if (!noInput && speed >= minSpeedForOpposite)
         {
@@ -122,17 +130,22 @@ public class PlayerAnimationController : MonoBehaviour
         }
         bool isSlowing = noInput || opposite;
 
-        // world -X check
+        // world -X check only uses velocity
         bool isBackwards = (horizVel.x < -backwardsXEpsilon);
 
         // --- Push to Animator ---
         animator.SetBool("isMoving", isMoving);
-        animator.SetBool("isCarrying", isCarrying);
         animator.SetBool("isFalling", isFalling);
         animator.SetBool("isSlowing", isSlowing);
         animator.SetBool("isBackwards", isBackwards);
+
+        // Only write isCarrying if explicitly told to
+        if (driveIsCarrying)
+        {
+            animator.SetBool(carryingParam, carryDebugValue);
+        }
+
         IsMoving = isMoving;
-        
         _prevPos = transform.position;
     }
 
@@ -174,13 +187,5 @@ public class PlayerAnimationController : MonoBehaviour
         return xz.sqrMagnitude > 1f ? xz.normalized : xz;
     }
 
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        moveSpeedEpsilon = Mathf.Max(0f, moveSpeedEpsilon);
-        minSpeedForOpposite = Mathf.Max(0f, minSpeedForOpposite);
-        backwardsXEpsilon = Mathf.Max(0f, backwardsXEpsilon);
-    }
-#endif
 
 }

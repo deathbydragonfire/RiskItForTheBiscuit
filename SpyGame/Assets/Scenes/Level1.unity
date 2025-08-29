@@ -4841,6 +4841,10 @@ PrefabInstance:
       propertyPath: targetCamera
       value: 
       objectReference: {fileID: 980432595}
+    - target: {fileID: 1283354471047331608, guid: 82101b29b0b864f4b9ae279204382623, type: 3}
+      propertyPath: nextLevelDelay
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4751503855116665679, guid: 82101b29b0b864f4b9ae279204382623, type: 3}
       propertyPath: m_Name
       value: Goal
