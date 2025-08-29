@@ -1420,15 +1420,15 @@ PrefabInstance:
       objectReference: {fileID: 7275633318673113993, guid: 1a380790ce9170a49966c2a9f8ff4dd9, type: 3}
     - target: {fileID: 8073264590564341183, guid: 368e42026cb79b8448bb1bb73bdc9159, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -17.410004
+      value: -17.21
       objectReference: {fileID: 0}
     - target: {fileID: 8073264590564341183, guid: 368e42026cb79b8448bb1bb73bdc9159, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15.59
+      value: 16.09
       objectReference: {fileID: 0}
     - target: {fileID: 8073264590564341183, guid: 368e42026cb79b8448bb1bb73bdc9159, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.005526
+      value: 8.74
       objectReference: {fileID: 0}
     - target: {fileID: 8073264590564341183, guid: 368e42026cb79b8448bb1bb73bdc9159, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4857,6 +4857,14 @@ PrefabInstance:
     - target: {fileID: 1283354471047331608, guid: 82101b29b0b864f4b9ae279204382623, type: 3}
       propertyPath: nextLevelDelay
       value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1283354471047331608, guid: 82101b29b0b864f4b9ae279204382623, type: 3}
+      propertyPath: 'starThresholds.Array.data[1]'
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1283354471047331608, guid: 82101b29b0b864f4b9ae279204382623, type: 3}
+      propertyPath: 'starThresholds.Array.data[2]'
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4751503855116665679, guid: 82101b29b0b864f4b9ae279204382623, type: 3}
       propertyPath: m_Name

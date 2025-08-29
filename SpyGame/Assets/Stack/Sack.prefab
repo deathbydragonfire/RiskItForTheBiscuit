@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2318620296059777879}
   - component: {fileID: 6896063685778266231}
   - component: {fileID: 8245024002093629559}
+  - component: {fileID: 8001902643957085694}
   m_Layer: 8
   m_Name: Sack
   m_TagString: Untagged
@@ -34,7 +35,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 4.27, y: 2.54, z: 0.73}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 114060185920218641}
@@ -123,6 +124,7 @@ MonoBehaviour:
   toggleActionRef: {fileID: 0}
   playerAnimator: {fileID: 0}
   carryingBoolParam: isCarrying
+  startWithCarryingTrue: 1
   localOffset: {x: 0, y: 0, z: 0}
   localRotationOffset: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &4264060644829310771
@@ -163,7 +165,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2, y: 1, z: 2}
+  m_Size: {x: 0.2, y: 1.5, z: 2}
   m_Center: {x: 0.8, y: 0, z: 0}
 --- !u!65 &2318620296059777879
 BoxCollider:
@@ -184,7 +186,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.2, y: 1, z: 2}
+  m_Size: {x: 0.2, y: 1.5, z: 2}
   m_Center: {x: -0.8, y: 0, z: 0}
 --- !u!65 &6896063685778266231
 BoxCollider:
@@ -205,7 +207,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 1, z: 0.2}
+  m_Size: {x: 2, y: 1.5, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0.8}
 --- !u!65 &8245024002093629559
 BoxCollider:
@@ -226,8 +228,44 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 1, z: 0.2}
+  m_Size: {x: 2, y: 1.5, z: 0.2}
   m_Center: {x: 0, y: 0, z: -0.8}
+--- !u!114 &8001902643957085694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8991655593562363994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c978912c5a8e4c41844f88fb1a86a36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stackLayerName: Stack
+  anchorOverride: {fileID: 0}
+  anchorOffset: {x: 0, y: 0, z: 0}
+  heightAbove: 10
+  heightBelow: 0.8
+  radius: 2
+  includeTriggers: 1
+  dedupe: 1
+  targetCanvas: {fileID: 0}
+  biscuitsText: {fileID: 0}
+  labelPrefix: 'Biscuits: '
+  font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+  fontSize: 28
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  margin: {x: 12, y: 12}
+  forceOverlayCanvas: 1
+  useSafeArea: 1
+  refreshInterval: 0.25
+  OnBiscuitsChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  drawCapsuleGizmo: 1
+  gizmoColor: {r: 0.2, g: 0.9, b: 0.6, a: 0.25}
+  gizmoWire: {r: 0.2, g: 0.9, b: 0.6, a: 1}
 --- !u!1001 &441212438285074938
 PrefabInstance:
   m_ObjectHideFlags: 0
