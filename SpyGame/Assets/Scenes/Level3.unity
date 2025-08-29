@@ -338,8 +338,28 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3645150584560841621, guid: 70891372eea0f1b4989cb43a1ceac326, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 108862582}
   m_SourcePrefab: {fileID: 100100000, guid: 70891372eea0f1b4989cb43a1ceac326, type: 3}
+--- !u!1 &108862577 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3645150584560841621, guid: 70891372eea0f1b4989cb43a1ceac326, type: 3}
+  m_PrefabInstance: {fileID: 61927365}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &108862582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108862577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85604984dfb6a8c429dfc9fad63671b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &112656776
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -348,9 +368,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (5)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -409,9 +437,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveDuration
@@ -649,6 +685,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player_Parent
       objectReference: {fileID: 0}
+    - target: {fileID: 5902606612269628832, guid: 3755ca93e33d18d48916195273c645a2, type: 3}
+      propertyPath: m_ExcludeLayers.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     - target: {fileID: 7213965347692901623, guid: 3755ca93e33d18d48916195273c645a2, type: 3}
       propertyPath: animator
       value: 
@@ -656,7 +696,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8591425157313286990, guid: 3755ca93e33d18d48916195273c645a2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1631108908}
   m_SourcePrefab: {fileID: 100100000, guid: 3755ca93e33d18d48916195273c645a2, type: 3}
 --- !u!1001 &221531996
 PrefabInstance:
@@ -1068,6 +1111,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BridgePlatform (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0c148f962fe0ed04b8d9448b39a7db9c, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1145,7 +1192,7 @@ GameObject:
   - component: {fileID: 349881293}
   - component: {fileID: 349881292}
   - component: {fileID: 349881291}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1367,7 +1414,7 @@ GameObject:
   - component: {fileID: 443862863}
   - component: {fileID: 443862862}
   - component: {fileID: 443862861}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1528,9 +1575,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (4)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -1650,7 +1705,7 @@ GameObject:
   - component: {fileID: 562470597}
   - component: {fileID: 562470596}
   - component: {fileID: 562470595}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1986,7 +2041,7 @@ GameObject:
   - component: {fileID: 655587937}
   - component: {fileID: 655587936}
   - component: {fileID: 655587935}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2090,9 +2145,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -2269,7 +2332,7 @@ GameObject:
   - component: {fileID: 756861305}
   - component: {fileID: 756861304}
   - component: {fileID: 756861303}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2688,7 +2751,7 @@ GameObject:
   - component: {fileID: 1106816278}
   - component: {fileID: 1106816277}
   - component: {fileID: 1106816276}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2851,6 +2914,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: a7dcbd11839feb54382bf39e84d08f1b, type: 3}
       propertyPath: m_Name
       value: BridgeRampfbx
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a7dcbd11839feb54382bf39e84d08f1b, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3431,9 +3498,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -3484,6 +3559,26 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+--- !u!1 &1631108907 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8591425157313286990, guid: 3755ca93e33d18d48916195273c645a2, type: 3}
+  m_PrefabInstance: {fileID: 218896725}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1631108908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1631108907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79951909b42935240a5be0211a7a04bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 1459842681}
+  carryingParam: isCarrying
+  backwardsParam: isBackwards
 --- !u!1001 &1676433016
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3606,9 +3701,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -3667,9 +3770,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveDuration
@@ -3740,9 +3851,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -3805,7 +3924,7 @@ GameObject:
   - component: {fileID: 1915924118}
   - component: {fileID: 1915924117}
   - component: {fileID: 1915924116}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3978,9 +4097,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
@@ -4100,7 +4227,7 @@ GameObject:
   - component: {fileID: 2031737679}
   - component: {fileID: 2031737678}
   - component: {fileID: 2031737677}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4337,9 +4464,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1713476929449325794, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: m_Name
       value: MovingPlatform (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 3238058324444165740, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5020007498521098886, guid: 031cf881d8fc85a4caf11f01979fc705, type: 3}
       propertyPath: moveOffset.x
