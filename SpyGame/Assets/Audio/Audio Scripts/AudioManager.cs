@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityUtils;
+using Random = UnityEngine.Random;
 
 public class AudioManager : Singleton<AudioManager>
 {
@@ -8,9 +10,34 @@ public class AudioManager : Singleton<AudioManager>
 
     [SerializeField] private Vector2 volumeRange = new Vector2(0.9f, 1.1f);
     [SerializeField] private Vector2 pitchRange = new Vector2(0.9f, 1.1f);
+
+    private void Start()
+    {
+        if (!gameplaySource)
+        {
+            CreateAudioSourceGame();
+        }
+        if (!uiSource)
+        {
+            CreateAudioSourceUI();
+        }
+    }
+
+    private void CreateAudioSourceGame()
+    {
+        AudioSource newAudioSource = gameObject.AddComponent<AudioSource>();
     
+        newAudioSource.playOnAwake = false;
+        gameplaySource = newAudioSource;
+    }
+    private void CreateAudioSourceUI()
+    {
+        AudioSource newAudioSource = gameObject.AddComponent<AudioSource>();
     
-    
+        newAudioSource.playOnAwake = false;
+        uiSource = newAudioSource;
+    }
+
     public void PlayOneShot(AudioClip clip, AudioRandomizeMode mode = AudioRandomizeMode.None, float panStereo = 0f) {
         if (clip == null) return;
 
