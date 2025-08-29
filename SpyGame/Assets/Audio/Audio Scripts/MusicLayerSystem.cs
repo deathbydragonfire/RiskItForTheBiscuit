@@ -166,4 +166,11 @@ using UnityEngine.Audio;
       activeSource.volume = MusicVolumeMax;
     }
     
+    
+    
+    //get all pickup spheres 
+    //when a sphere is picked up, check how many is available 
+    
+    // keep track how many in basket 
+    
   }
