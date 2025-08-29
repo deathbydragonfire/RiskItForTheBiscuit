@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 2318620296059777879}
   - component: {fileID: 6896063685778266231}
   - component: {fileID: 8245024002093629559}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -117,10 +117,12 @@ MonoBehaviour:
   playerPickupRange: 1
   playerLayerName: Player
   stackLayerName: Stack
-  stackXZRadius: 0.5
-  groupScanRadius: 1.25
+  stackSearchRadius: 0.75
+  stackSearchHeight: 6
   aboveYTolerance: 0.01
   toggleActionRef: {fileID: 0}
+  playerAnimator: {fileID: 0}
+  carryingBoolParam: isCarrying
   localOffset: {x: 0, y: 0, z: 0}
   localRotationOffset: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &4264060644829310771
@@ -289,6 +291,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 58a08bcdf286ea54f91740511bcc5f4a, type: 3}
       propertyPath: m_Name
       value: Test_bag
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 58a08bcdf286ea54f91740511bcc5f4a, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
